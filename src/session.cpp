@@ -1,11 +1,6 @@
-#include <boost/json.hpp>
 #include <memory>
 #include <iostream>
 #include "session.h"
-
-void Session::start() {
-    read();
-}
 
 void Session::read() {
     auto self = shared_from_this();
@@ -22,20 +17,7 @@ void Session::read() {
 }
 
 void Session::handle_request() {
-    json::object response_json;
-
-    if (req_.method() == http::verb::get && req_.target() == "/tiny") {
-        response_json["status"] = "Valid Response!";
-        res_.result(http::status::ok);
-    } else {
-        response_json["status"] = "Unknown endpoint.";
-        res_.result(http::status::bad_request);
-    }
-
-    res_.set(http::field::content_type, "application/json");
-    res_.body() = json::serialize(response_json);
-    res_.prepare_payload();
-
+    router_->route(req_, res_);
     write();
 }
 

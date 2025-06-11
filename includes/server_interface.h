@@ -1,6 +1,7 @@
 #pragma once
 
 class IServer {
-protected:
+public:
+    virtual ~IServer() = default;
     virtual void start() = 0;
 };

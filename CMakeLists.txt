@@ -19,10 +19,11 @@ find_package(Boost 1.83 REQUIRED
 )
 
 # ───────────────────────────────────────────────────────────────────────
-# Your executable
+# Executable
 add_executable(URLShortener
     src/proof.cpp
     src/session.cpp
+    src/router.cpp
 )
 
 target_include_directories(URLShortener
