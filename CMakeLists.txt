@@ -25,6 +25,10 @@ add_executable(URLShortener
     src/session.cpp
     src/router.cpp
     src/handler/shortly_handler.cpp
+    src/validator/json_validator.cpp
+    src/validator/key_count_rule.cpp
+    src/validator/key_rule.cpp
+    src/parser/json_parser.cpp
 )
 
 target_include_directories(URLShortener
