@@ -44,3 +44,9 @@ target_link_libraries(URLShortener PRIVATE
   Boost::atomic
   Boost::json
 )
+
+option(BUILD_TESTS "Enable building of unit tests" OFF)
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(test)
+endif()
