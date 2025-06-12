@@ -1,10 +1,22 @@
-#include "router.h"
+#include "router/router.h"
 #include <iostream>
 
 void Router::add_route(http::verb method,
                         const std::string& endpoint,
                         handler_ptr handler) {
-    routes_[method][endpoint] = std::move(handler);
+    if (endpoint.empty() || !handler) throw std::runtime_error("Tried to add invalid route");
+
+    switch(method) {
+        case http::verb::delete_:
+        case http::verb::post:
+        case http::verb::get:
+        case http::verb::put:
+            routes_[method][endpoint] = std::move(handler);
+            break;
+        default:
+            std::cout << "Unsupported method.\n";
+            return;
+    }
 }
 
 void Router::route(const http::request<http::string_body>& req,

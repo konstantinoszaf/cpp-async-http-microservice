@@ -1,7 +1,8 @@
 #include <iostream>
-#include <server.h>
-#include "router.h"
-#include "tiny_handler.h"
+#include "server/server.h"
+#include "router/router.h"
+#include "handler/shortly_handler.h"
+#include "session/session.h"
 
 int main() {
     try {
@@ -10,7 +11,7 @@ int main() {
         };
 
         auto router = std::make_shared<Router>();
-        router->add_route(http::verb::get, "/tiny", std::make_shared<TinyHandler>());
+        router->add_route(http::verb::post, "/shortly", std::make_shared<ShortlyHandler>());
         ServerSettings settings{8080, factory};
         Server server{settings, router};
         server.start();

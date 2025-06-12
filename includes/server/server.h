@@ -1,7 +1,7 @@
 #pragma once
-#include "server_interface.h"
-#include "router_interface.h"
-#include "session.h"
+#include "server/server_interface.h"
+#include "router/router_interface.h"
+#include "session/session_interface.h"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include "functional"
@@ -9,6 +9,7 @@
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 namespace http = beast::http;
+
 using tcp = asio::ip::tcp;
 using SessionFactory = std::function<std::shared_ptr<ISession>(
         tcp::socket sock,

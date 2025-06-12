@@ -24,6 +24,7 @@ add_executable(URLShortener
     src/proof.cpp
     src/session.cpp
     src/router.cpp
+    src/handler/shortly_handler.cpp
 )
 
 target_include_directories(URLShortener

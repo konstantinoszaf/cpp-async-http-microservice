@@ -1,6 +1,6 @@
 #pragma once
-#include "session_interface.h"
-#include "router_interface.h"
+#include "session/session_interface.h"
+#include "router/router_interface.h"
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <memory>
