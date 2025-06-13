@@ -3,7 +3,7 @@
 #include "string"
 #include <iostream>
 
-void JsonValidator::add_rule(std::unique_ptr<IValidationRule> rule) 
+void JsonValidator::add_rule(std::unique_ptr<IValidationRule> rule)
 {
     if (!rule) {
         std::cout << "Rule is empty\n";
@@ -26,4 +26,8 @@ void JsonValidator::validate(const json::object& obj)
             throw URLShortener::exception::ValidationException(error_msg);
         }
     }
+}
+
+std::size_t JsonValidator::rule_count() {
+    return rules.size();
 }

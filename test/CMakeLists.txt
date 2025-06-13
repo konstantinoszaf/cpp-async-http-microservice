@@ -34,18 +34,12 @@ foreach(test_src IN LISTS TEST_SOURCES)
       ${CMAKE_SOURCE_DIR}/includes
       ${CMAKE_SOURCE_DIR}/test/include
       ${CMAKE_SOURCE_DIR}/test/mock
-      ${Boost_INCLUDE_DIRS}
   )
 
   target_link_libraries(${test_name}
     PRIVATE
       gmock_main
-      Boost::system
-      Boost::thread
-      Boost::date_time
-      Boost::chrono
-      Boost::atomic
-      Boost::json
+      url_service
   )
 
   gtest_discover_tests(${test_name})

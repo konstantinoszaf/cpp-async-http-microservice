@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(URLShortener LANGUAGES CXX)
 
-# ───────────────────────────────────────────────────────────────────────
 # C++ standard
 set(CMAKE_CXX_STANDARD      20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ───────────────────────────────────────────────────────────────────────
 # Find Boost (1.83.0 or newer), only the linkable components
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
@@ -18,9 +16,8 @@ find_package(Boost 1.83 REQUIRED
     json
 )
 
-# ───────────────────────────────────────────────────────────────────────
-# Executable
-add_executable(URLShortener
+# Core library
+add_library(url_service
     src/proof.cpp
     src/session.cpp
     src/router.cpp
@@ -31,18 +28,28 @@ add_executable(URLShortener
     src/parser/json_parser.cpp
 )
 
-target_include_directories(URLShortener
-  PRIVATE
+target_include_directories(url_service
+  PUBLIC
     ${CMAKE_SOURCE_DIR}/includes
 )
 
-target_link_libraries(URLShortener PRIVATE
-  Boost::system
-  Boost::thread
-  Boost::date_time
-  Boost::chrono
-  Boost::atomic
-  Boost::json
+target_link_libraries(url_service
+  PUBLIC
+    Boost::system
+    Boost::thread
+    Boost::date_time
+    Boost::chrono
+    Boost::atomic
+    Boost::json
+)
+
+add_executable(URLShortener
+    src/proof.cpp
+)
+
+target_link_libraries(URLShortener
+  PRIVATE
+    url_service
 )
 
 option(BUILD_TESTS "Enable building of unit tests" OFF)
