@@ -38,4 +38,5 @@ build-image:
 	docker build -t $(DOCKER_NAME):latest .
 
 deploy:
+	docker rm -f $(DOCKER_NAME)
 	docker run -d --name $(DOCKER_NAME) -p $(DOCKER_PORT):$(DOCKER_PORT) $(DOCKER_NAME):latest

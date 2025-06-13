@@ -1,0 +1,28 @@
+# project-wide
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+
+# build artifacts
+/local_build_dir/
+build/
+CMakeFiles/
+CMakeCache.txt
+*.o
+*.obj
+
+# dependencies & toolchains
+vcpkg/
+.vcpkg/
+
+# tests and docs
+test/
+docs/
+
+# IDEs & editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.sw?
