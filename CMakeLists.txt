@@ -18,9 +18,9 @@ find_package(Boost 1.83 REQUIRED
 
 # Core library
 add_library(url_service
-    src/proof.cpp
-    src/session.cpp
-    src/router.cpp
+    src/entrypoint.cpp
+    src/session/session.cpp
+    src/router/router.cpp
     src/handler/shortly_handler.cpp
     src/validator/json_validator.cpp
     src/validator/key_count_rule.cpp
@@ -45,7 +45,7 @@ target_link_libraries(url_service
 )
 
 add_executable(URLShortener
-    src/proof.cpp
+    src/entrypoint.cpp
 )
 
 target_link_libraries(URLShortener
