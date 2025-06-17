@@ -1,4 +1,5 @@
 #include "validator/json_validator.h"
+#include "factory/factory.h"
 #include "exception/validation_exception.h"
 #include "string"
 #include <iostream>

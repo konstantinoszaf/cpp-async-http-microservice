@@ -26,6 +26,7 @@ add_library(url_service
     src/validator/key_count_rule.cpp
     src/validator/key_rule.cpp
     src/parser/json_parser.cpp
+    src/factory/factory.cpp
 )
 
 target_include_directories(url_service

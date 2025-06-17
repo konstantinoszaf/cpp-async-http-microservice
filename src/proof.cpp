@@ -3,17 +3,14 @@
 #include "router/router.h"
 #include "handler/shortly_handler.h"
 #include "session/session.h"
+#include "factory/factory.h"
 
 int main() {
     try {
-        SessionFactory factory = [&](tcp::socket sock, std::shared_ptr<IRouter> rtr) {
-            return std::make_shared<Session>(std::move(sock), rtr);
-        };
+        Factory factory;
 
-        auto router = std::make_shared<Router>();
-        router->add_route(http::verb::post, "/shortly", std::make_shared<ShortlyHandler>());
-        ServerSettings settings{8080, factory};
-        Server server{settings, router};
+        ServerSettings settings{8080};
+        Server server{settings, factory};
         server.start();
     } catch (std::exception& e) {
         std::cout << "Server error: " << e.what() << '\n';

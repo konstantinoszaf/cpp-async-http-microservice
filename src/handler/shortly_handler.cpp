@@ -1,23 +1,23 @@
 #include "handler/shortly_handler.h"
+#include "factory/factory.h"
 #include "exception/validation_exception.h"
 #include "parser/json_parser.h"
 #include <iostream>
 
-ShortlyHandler::ShortlyHandler() {
-    json_parser = std::make_unique<JsonParser>();
+ShortlyHandler::ShortlyHandler(std::shared_ptr<IParser> parser) {
+    json_parser = parser;
 }
 
 void ShortlyHandler::handle(const http::request<http::string_body>& req,
                             http::response<http::string_body>& res) {
     try {
-        if (req.body().empty()) throw std::runtime_error("Request body is empty");
+        if (req.body().empty()) throw URLShortener::exception::ValidationException("Request body is empty");
 
         std::cout << req.body() << '\n';
-
         auto [url, provider] = json_parser->parse(req.body());
 
-        // auto provider = Providers::getProvider(req.body())
-        std::cout << "url: " << url << ", provider: " << provider << '\n';
+        std::cout << "url: " << url << ", provider: " << static_cast<unsigned int>(provider) << '\n';
+        // auto provider_class = factory.getProvider(provider)
         json::object response_json;
 
         response_json["status"] = "Valid Response!";

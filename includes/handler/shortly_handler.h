@@ -1,17 +1,17 @@
 #pragma once
+#include "parser/parser_interface.h"
 #include "handler_interface.h"
 #include <boost/beast.hpp>
-#include "parser/parser_interface.h"
 
 namespace http = boost::beast::http;
 
 class ShortlyHandler : public IHandler {
 public:
+    ShortlyHandler(std::shared_ptr<IParser> parser);
     void handle(const http::request<http::string_body>& req,
                 http::response<http::string_body>& res) override;
-    ShortlyHandler();
 private:
-    std::unique_ptr<IParser> json_parser;
+    std::shared_ptr<IParser> json_parser;
 };
 
 /**

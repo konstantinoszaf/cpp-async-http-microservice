@@ -1,6 +1,7 @@
 #pragma once
 #include "validator_interface.h"
 #include "rule_interface.h"
+#include "factory/factory_interface.h"
 #include "memory"
 #include "vector"
 

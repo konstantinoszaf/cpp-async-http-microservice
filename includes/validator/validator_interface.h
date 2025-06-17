@@ -3,6 +3,7 @@
 #include <boost/json.hpp>
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace json = boost::json;
 
