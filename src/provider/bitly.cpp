@@ -18,7 +18,6 @@ Bitly::Bitly(std::shared_ptr<IHttpClient> client, std::shared_ptr<IEnvReader> en
 };
 
 std::string Bitly::get_short_url(std::string_view payload) {
-    std::cout << "get_short_url()\n";
     auto j = json::parse(payload);
     const json::object& obj = j.as_object();
 
@@ -30,6 +29,5 @@ std::string Bitly::get_short_url(std::string_view payload) {
         );
     }
 
-    std::cout << "leaving get_short_url()\n";
     return obj.at("link").as_string().c_str();
 }

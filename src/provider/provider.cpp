@@ -39,21 +39,7 @@ std::string Provider::create_request_body(std::string_view url) {
     return json::serialize(payload);
 }
 
-// json::object Provider::validate_response_body(std::string_view payload) {
-//     json::value j = json::parse(rsp);
-
-//     if (!j.is_object()) {
-//         throw URLShortener::exception::ProviderException(
-//             "Internal Server Error",
-//             HTTP::code::InternalServerError
-//         );
-//     }
-
-//     return json::object obj = j.as_object();
-// }
-
 std::string Provider::shorten(std::string_view url) {
-    std::cout << "Hello\n";
     if (url.empty()) {
         std::cout << "URL is empty!\n";
         throw URLShortener::exception::ProviderException(
@@ -63,8 +49,6 @@ std::string Provider::shorten(std::string_view url) {
     }
 
     auto body = create_request_body(url);
-    std::cout << "request payload is: " << body << '\n';
-    std::cout << "from Provider: " << request_info.host << '\n';
     auto response = http_client->post(body, request_info);
 
     if (response.status_code != HTTP::code::OK || response.body.empty()) {

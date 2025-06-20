@@ -18,7 +18,6 @@ TinyURL::TinyURL(std::shared_ptr<IHttpClient> client, std::shared_ptr<IEnvReader
 };
 
 std::string TinyURL::get_short_url(std::string_view payload) {
-    std::cout << "get_short_url()\n";
     auto j = json::parse(payload);
     const json::object& obj = j.as_object();
 
@@ -37,6 +36,5 @@ std::string TinyURL::get_short_url(std::string_view payload) {
         );
     }
 
-    std::cout << "leaving get_short_url()\n";
     return data.at("tiny_url").as_string().c_str();
 }

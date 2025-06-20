@@ -4,7 +4,6 @@
 #include "parser/json_parser.h"
 #include "http_adapter/boost_http_adapter.h"
 #include <boost/json.hpp>
-#include <iostream>
 
 namespace json = boost::json;
 
@@ -41,9 +40,7 @@ void ShortlyHandler::handle(const Request& request, Response& response) {
         auto [url, provider_type] = json_parser->parse(request.body);
         auto provider = provider_factory->createProvider(provider_type);
 
-        std::cout << "calling shorten for url: " << url << '\n';
         std::string short_url = provider->shorten(url);
-        std::cout << "short_url: " << short_url << '\n';
 
         json::object data_object;
         data_object["url"] = url;

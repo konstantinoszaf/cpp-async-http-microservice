@@ -15,7 +15,6 @@ namespace ssl = boost::asio::ssl;
 using tcp = asio::ip::tcp;
 
 Response HttpClient::post(std::string_view payload, RequestInfo& config) {
-    std::cout << "Hello from post\n";
     asio::io_context ioc;
     ssl::context ctx(ssl::context::tlsv13_client);
     ctx.set_default_verify_paths();
@@ -24,7 +23,6 @@ Response HttpClient::post(std::string_view payload, RequestInfo& config) {
     stream.set_verify_mode(ssl::verify_peer);
     stream.set_verify_callback(ssl::rfc2818_verification(config.host));
 
-    std::cout << "before\n";
     if (!SSL_set_tlsext_host_name(stream.native_handle(), config.host.c_str())) {
         std::cout << "Got in, host is: " << config.host << '\n';
 
@@ -32,7 +30,6 @@ Response HttpClient::post(std::string_view payload, RequestInfo& config) {
                                     asio::error::get_ssl_category()};
         return bad_response(ec.message(), HTTP::code::InternalServerError);
     }
-    std::cout << "after\n";
 
     beast::error_code ec;
     tcp::resolver resolver(ioc);
@@ -63,8 +60,6 @@ Response HttpClient::post(std::string_view payload, RequestInfo& config) {
     req.body() = payload;
     req.prepare_payload();
 
-    std::cout << "request " << req << '\n';
-
     socket.expires_after(std::chrono::seconds(30));
     stream.handshake(ssl::stream_base::client, ec);
 
@@ -91,23 +86,13 @@ Response HttpClient::post(std::string_view payload, RequestInfo& config) {
     }
 
     stream.shutdown(ec);
-    if (ec) {
-        std::cout << "Shutdown ec: " 
-                << ec.value() 
-                << " / " 
-                << ec.category().name() 
-                << " → " 
-                << ec.message() 
-                << "\n";
-    }
+
     if (ec && ec != asio::error::eof && ec != boost::asio::ssl::error::stream_truncated) {
         std::cout << "Could not shut down\n";
         return bad_response(res.body(),
                             static_cast<HTTP::code>(res.result_int()));
     }
 
-    std::cout << "feugw!!\n";
-    std::cout << "response: " << res << '\n';
     return BoostHttpAdapter::from_boost(res);
 }
 
