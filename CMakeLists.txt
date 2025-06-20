@@ -5,8 +5,8 @@ project(URLShortener LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD      20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# External deps
 find_package(OpenSSL REQUIRED)
-# Find Boost (1.83.0 or newer), only the linkable components
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
     system
@@ -17,51 +17,89 @@ find_package(Boost 1.83 REQUIRED
     json
 )
 
-# Core library
-add_library(url_service
-    src/entrypoint.cpp
-    src/session/session.cpp
-    src/router/router.cpp
-    src/handler/shortly_handler.cpp
-    src/validator/json_validator.cpp
-    src/validator/key_count_rule.cpp
-    src/validator/key_rule.cpp
-    src/parser/json_parser.cpp
-    src/factory/factory.cpp
-    src/factory/provider_factory.cpp
-    src/http_adapter/boost_http_adapter.cpp
-    src/client/http_client.cpp
-    src/provider/provider.cpp
-    src/provider/bitly.cpp
-    src/provider/tinyurl.cpp
+# -----------------------------------------------------------------------------
+# Core (pure domain & use-cases, no external deps)
+# -----------------------------------------------------------------------------
+add_library(core STATIC
+    src/core/usecases/shortly_handler.cpp
+)
+target_link_libraries(core PUBLIC
+    Boost::json
+)
+target_include_directories(core
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_include_directories(url_service
-  PUBLIC
-    ${CMAKE_SOURCE_DIR}/includes
+# -----------------------------------------------------------------------------
+# Adapters (incoming & outgoing translation layers)
+# -----------------------------------------------------------------------------
+add_library(adapters STATIC
+    src/adapters/incoming/session.cpp
+    src/adapters/incoming/router.cpp
+    #src/adapters/incoming/server.cpp
+    src/adapters/outgoing/boost_http_adapter.cpp
 )
-
-target_link_libraries(url_service
+target_link_libraries(adapters
   PUBLIC
+    core
+  PRIVATE
     Boost::system
     Boost::thread
     Boost::date_time
     Boost::chrono
     Boost::atomic
     Boost::json
+)
+target_include_directories(adapters
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+
+# -----------------------------------------------------------------------------
+# Infrastructure (concrete implementations of ports)
+# -----------------------------------------------------------------------------
+add_library(infra STATIC
+    src/infra/parser/json_parser.cpp
+    src/infra/validator/json_validator.cpp
+    src/infra/validator/key_rule.cpp
+    src/infra/validator/key_count_rule.cpp
+    src/infra/provider/provider.cpp
+    src/infra/provider/bitly.cpp
+    src/infra/provider/tinyurl.cpp
+    src/infra/client/http_client.cpp
+    #src/infra/environment/env_reader.cpp
+    src/infra/factory/provider_factory.cpp
+)
+target_link_libraries(infra
+  PUBLIC
+    core
+  PRIVATE
+    Boost::json
     OpenSSL::SSL
     OpenSSL::Crypto
 )
-
-add_executable(URLShortener
-    src/entrypoint.cpp
+target_include_directories(infra
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
+# -----------------------------------------------------------------------------
+# Application (composition root)
+# -----------------------------------------------------------------------------
+add_executable(URLShortener
+    src/app/main.cpp
+    src/app/factory.cpp
+)
 target_link_libraries(URLShortener
   PRIVATE
-    url_service
+    adapters
+    infra
 )
 
+# -----------------------------------------------------------------------------
+# Optional tests
+# -----------------------------------------------------------------------------
 option(BUILD_TESTS "Enable building of unit tests" OFF)
 if (BUILD_TESTS)
     enable_testing()

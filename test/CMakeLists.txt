@@ -31,7 +31,7 @@ foreach(test_src IN LISTS TEST_SOURCES)
   add_executable(${test_name} ${test_src})
   target_include_directories(${test_name}
     PRIVATE
-      ${CMAKE_SOURCE_DIR}/includes
+      ${CMAKE_SOURCE_DIR}/include
       ${CMAKE_SOURCE_DIR}/test/include
       ${CMAKE_SOURCE_DIR}/test/mock
   )
@@ -39,7 +39,8 @@ foreach(test_src IN LISTS TEST_SOURCES)
   target_link_libraries(${test_name}
     PRIVATE
       gmock_main
-      url_service
+      infra
+      Boost::json
   )
 
   gtest_discover_tests(${test_name})

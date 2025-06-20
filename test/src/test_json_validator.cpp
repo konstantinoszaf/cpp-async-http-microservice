@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include "mock_rule.h"
-#include "validator/json_validator.h"
-#include "exception/validation_exception.h"
+#include "infra/validator/json_validator.h"
+#include "infra/exception/exceptions.h"
 
 using ::testing::Return;
 

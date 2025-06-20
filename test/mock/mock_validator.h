@@ -1,7 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "validator/validator_interface.h"
+#include "core/ports/validator_interface.h"
 #include "mock_rule.h"
 
 class MockValidator : public IValidator {

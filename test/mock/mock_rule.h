@@ -1,7 +1,7 @@
 #pragma once
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "validator/rule_interface.h"
+#include "core/ports/rule_interface.h"
 
 class MockRule : public IValidationRule {
 public:

@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <boost/json.hpp>
-#include "validator/key_rule.h"
+#include "infra/validator/key_rule.h"
 
 namespace json = boost::json;
 

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "validator/key_count_rule.h"
+#include "infra/validator/key_count_rule.h"
 
 class TestKeyCountRule : public ::testing::Test {
 protected:
