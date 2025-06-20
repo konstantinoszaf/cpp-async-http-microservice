@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-thread-dev \
     libboost-date-time-dev \
     libboost-json-dev \
+    libssl-dev \
     make \
     && rm -rf /var/lib/apt/lists/*
 
@@ -28,6 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-thread1.83.0 \
     libboost-date-time1.83.0 \
     libboost-json1.83.0 \
+    libssl3 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /URLShortener/build/URLShortener .

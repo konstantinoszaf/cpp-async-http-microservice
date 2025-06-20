@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "parser/json_parser.h"
+#include "types.h"
 #include "exception/validation_exception.h"
 #include "mock_validator.h"
 

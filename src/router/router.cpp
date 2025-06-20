@@ -1,16 +1,18 @@
 #include "router/router.h"
 #include <iostream>
+#include "types.h"
 
-void Router::add_route(http::verb method,
+void Router::add_route(HTTP::method method,
                         const std::string& endpoint,
-                        handler_ptr handler) {
-    if (endpoint.empty() || !handler) throw std::runtime_error("Tried to add invalid route");
+                        handler_ptr handler)
+{
+    if (endpoint.empty() || !handler) return;
 
     switch(method) {
-        case http::verb::delete_:
-        case http::verb::post:
-        case http::verb::get:
-        case http::verb::put:
+        case HTTP::method::DELETE:
+        case HTTP::method::POST:
+        case HTTP::method::GET:
+        case HTTP::method::PUT:
             routes_[method][endpoint] = std::move(handler);
             break;
         default:
@@ -19,11 +21,10 @@ void Router::add_route(http::verb method,
     }
 }
 
-void Router::route(const http::request<http::string_body>& req,
-            http::response<http::string_body>& res) {
-    auto handler_map = routes_.find(req.method());
+void Router::route(const Request& req, Response& res) {
+    auto handler_map = routes_.find(req.method);
     if (handler_map != routes_.end()) {
-        auto handler = handler_map->second.find(std::string(req.target()));
+        auto handler = handler_map->second.find(std::string(req.target));
         if (handler != handler_map->second.end()) {
             handler->second->handle(req, res);
             return;
@@ -31,8 +32,7 @@ void Router::route(const http::request<http::string_body>& req,
     }
 
     // defaults to 404
-    res.result(http::status::not_found);
-    res.set(http::field::content_type, "text/plain");
-    res.body() = "Not Found";
-    res.prepare_payload();
+    res.status_code = HTTP::code::NotFound;
+    res.headers["Content-Type"] = "text/plain";
+    res.body = "Not Found";
 }

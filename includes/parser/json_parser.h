@@ -1,14 +1,10 @@
 #pragma once
+#include "types.h"
 #include "parser_interface.h"
-#include "validator/validator_interface.h"
 #include "factory/factory_interface.h"
 #include <memory>
 
 class IValidator;
-enum class  ProviderType {
-    BITLY   = 0,
-    TINYURL = 1
-};
 
 class JsonParser : public IParser {
 public:

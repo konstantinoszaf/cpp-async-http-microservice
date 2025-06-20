@@ -5,6 +5,7 @@ project(URLShortener LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD      20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(OpenSSL REQUIRED)
 # Find Boost (1.83.0 or newer), only the linkable components
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
@@ -27,6 +28,12 @@ add_library(url_service
     src/validator/key_rule.cpp
     src/parser/json_parser.cpp
     src/factory/factory.cpp
+    src/factory/provider_factory.cpp
+    src/http_adapter/boost_http_adapter.cpp
+    src/client/http_client.cpp
+    src/provider/provider.cpp
+    src/provider/bitly.cpp
+    src/provider/tinyurl.cpp
 )
 
 target_include_directories(url_service
@@ -42,6 +49,8 @@ target_link_libraries(url_service
     Boost::chrono
     Boost::atomic
     Boost::json
+    OpenSSL::SSL
+    OpenSSL::Crypto
 )
 
 add_executable(URLShortener

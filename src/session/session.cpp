@@ -1,6 +1,7 @@
 #include <memory>
 #include <iostream>
 #include "session/session.h"
+#include "http_adapter/boost_http_adapter.h"
 
 void Session::read() {
     auto self = shared_from_this();
@@ -17,7 +18,11 @@ void Session::read() {
 }
 
 void Session::handle_request() {
-    router_->route(req_, res_);
+    Request request = BoostHttpAdapter::from_boost(req_);
+    Response response;
+    router_->route(request, response);
+
+    res_ = BoostHttpAdapter::to_boost(response);
     write();
 }
 

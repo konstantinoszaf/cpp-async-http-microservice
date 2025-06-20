@@ -6,6 +6,9 @@
 #include "validator/json_validator.h"
 #include "parser/json_parser.h"
 #include "session/session.h"
+#include "environment_reader/env_reader.h"
+#include "client/http_client.h"
+#include "factory/provider_factory.h"
 
 Factory::Factory() {
     // 1) Validation rules
@@ -25,9 +28,18 @@ Factory::Factory() {
 
     parser = std::make_shared<JsonParser>(validator);
 
-    // 3) Handlers
+    // 3) create http client
+    http_client = std::make_shared<HttpClient>();
+
+    // 4) create environment reader
+    env_reader = std::make_shared<EnvReader>();
+
+    // 5) Method that creates the provider
+    provider_factory = std::make_shared<ProviderFactory>(http_client, env_reader);
+
+    // 6) Handlers
     router = std::make_shared<Router>();
-    router->add_route(http::verb::post, "/shortly", std::make_shared<ShortlyHandler>(parser));
+    router->add_route(HTTP::method::POST, "/shortly", std::make_shared<ShortlyHandler>(parser, provider_factory));
 }
 
 std::shared_ptr<IRouter> Factory::getRouter() {
@@ -47,4 +59,16 @@ std::shared_ptr<IParser> Factory::getParser() {
 
 std::shared_ptr<IValidator> Factory::getValidator() {
     return validator;
+}
+
+std::shared_ptr<IProviderFactory> Factory::getProviderFactory() {
+    return provider_factory;
+}
+
+std::shared_ptr<IEnvReader> Factory::getEnv() {
+    return env_reader;
+}
+
+std::shared_ptr<IHttpClient> Factory::getHttpClient() {
+    return http_client;
 }
