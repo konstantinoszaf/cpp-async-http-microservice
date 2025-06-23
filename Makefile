@@ -6,7 +6,7 @@ DOCKER_PORT      := 8080
 VCPKG_TOOLCHAIN  := $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 .PHONY: all local clean test test-run
-all: local
+all: build-image
 
 local:
 	@mkdir -p $(LOCAL_BUILD_DIR)

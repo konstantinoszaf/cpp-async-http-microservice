@@ -12,7 +12,12 @@ JsonParser::JsonParser(std::shared_ptr<IValidator> validator) {
 
 std::pair<std::string, ProviderType> JsonParser::parse(std::string_view j_str) {
     try {
-        json::value j = json::parse(j_str);
+        json::value j;
+        try {
+            j = json::parse(j_str);
+        } catch (...) {
+            throw URLShortener::exception::ValidationException("Invalid JSON format");
+        }
 
         if (!j.is_object()) {
             throw URLShortener::exception::ValidationException("JSON is not an object");
@@ -28,7 +33,7 @@ std::pair<std::string, ProviderType> JsonParser::parse(std::string_view j_str) {
         return {std::move(url), std::move(provider)};
     }
     catch(const std::exception& e) {
-        throw URLShortener::exception::ValidationException("Invalid JSON");
+        throw URLShortener::exception::ValidationException(e.what());
     }
 }
 
