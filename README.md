@@ -2,6 +2,7 @@
 A fully asynchronous server and TLS-enabled client microservice in C++.
 
 The input is a json payload containing:
+
 | param    | type   | required | description                        |
 |----------|--------|----------|------------------------------------|
 | url      | string | Y        | The URL to shorten                 |
@@ -10,15 +11,18 @@ The input is a json payload containing:
 ## Response
 
 On **success** (`result == 0`)
+
 | param     | type   | required | description                                 |
 |-----------|--------|----------|---------------------------------------------|
 | result    | int    | Y        | The original URL                            |
 | reason    | string | Y        | The original URL                            |
 | data      | object | Y        | Payload object containing the shortened URL |
 
-** `data` object**:
-| url       | string | Y        | The original URL                     |
-| shortened | string | Y        | The shortened link                   |
+The `data` object
+| param     | type   | required | description        |
+|-----------|--------|----------|------------------- |
+| url       | string | Y        | The original URL   |
+| shortened | string | Y        | The shortened link |
 
 ```json
 {
@@ -33,6 +37,7 @@ On **success** (`result == 0`)
 ```
 
 On **error** (`result == 1`)
+
 | param     | type   | required | description                                 |
 |-----------|--------|----------|---------------------------------------------|
 | result    | int    | Y        | The original URL                            |
@@ -57,8 +62,8 @@ curl -vvv -X 'POST' "Content-Type: application/json" localhost:8080/shortly -d '
 
 # Configuration
 You need two API keys:
-[bit.ly](https://dev.bitly.com/)           -> set `API_KEY_BITLY`
-[tinyurl.com](https://tinyurl.com/app/dev) -> set `API_KEY_TINYURL`
+- [bit.ly](https://dev.bitly.com/)           -> set `API_KEY_BITLY`
+- [tinyurl.com](https://tinyurl.com/app/dev) -> set `API_KEY_TINYURL`
 
 ```
 export API_KEY_BITLY="your-bitly-key"
@@ -66,8 +71,10 @@ export API_KEY_TINYURL="your-tinyurl-key"
 ```
 
 # Build & Run
+```
 make
 make deploy
+```
 
 # Technologies & Design
 * C++20 and coroutines
