@@ -2,6 +2,7 @@
 #include "infra/exception/exceptions.h"
 #include "core/ports/validator_interface.h"
 #include <boost/json.hpp>
+#include "iostream"
 
 namespace json = boost::json;
 
@@ -27,7 +28,7 @@ std::pair<std::string, ProviderType> JsonParser::parse(std::string_view j_str) {
         return {std::move(url), std::move(provider)};
     }
     catch(const std::exception& e) {
-        throw URLShortener::exception::ValidationException(e.what());
+        throw URLShortener::exception::ValidationException("Invalid JSON");
     }
 }
 

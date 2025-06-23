@@ -22,13 +22,13 @@ void Router::add_route(HTTP::method method,
     }
 }
 
-void Router::route(const Request& req, Response& res) {
+async_task<void> Router::route(const Request& req, Response& res) {
     auto handler_map = routes_.find(req.method);
     if (handler_map != routes_.end()) {
         auto handler = handler_map->second.find(std::string(req.target));
         if (handler != handler_map->second.end()) {
-            handler->second->handle(req, res);
-            return;
+            co_await handler->second->handle(req, res);
+            co_return;
         }
     }
 
@@ -36,4 +36,5 @@ void Router::route(const Request& req, Response& res) {
     res.status_code = HTTP::code::NotFound;
     res.headers["Content-Type"] = "text/plain";
     res.body = "Not Found";
+    co_return;
 }

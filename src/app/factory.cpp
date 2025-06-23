@@ -10,7 +10,8 @@
 #include "infra/client/http_client.h"
 #include "infra/factory/provider_factory.h"
 
-Factory::Factory() {
+Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_client} {
+    ssl_ctx_.set_default_verify_paths();
     // 1) Validation rules
     std::vector<std::unique_ptr<IValidationRule>> rules;
 
@@ -29,7 +30,7 @@ Factory::Factory() {
     parser = std::make_shared<JsonParser>(validator);
 
     // 3) create http client
-    http_client = std::make_shared<HttpClient>();
+    http_client = std::make_shared<HttpClient>(io_ctx_, ssl_ctx_);
 
     // 4) create environment reader
     env_reader = std::make_shared<EnvReader>();
@@ -71,4 +72,12 @@ std::shared_ptr<IEnvReader> Factory::getEnv() {
 
 std::shared_ptr<IHttpClient> Factory::getHttpClient() {
     return http_client;
+}
+
+asio::io_context& Factory::getContext() {
+    return io_ctx_;
+}
+
+asio::ssl::context& Factory::getSslContext(){
+    return ssl_ctx_;
 }

@@ -5,6 +5,7 @@
 #include <memory>
 #include <iostream>
 #include <boost/json.hpp>
+#include <boost/asio/awaitable.hpp>
 
 namespace json = boost::json;
 
@@ -41,7 +42,7 @@ std::string Provider::create_request_body(std::string_view url) {
     return json::serialize(payload);
 }
 
-std::string Provider::shorten(std::string_view url) {
+async_task<std::string> Provider::shorten(std::string_view url) {
     if (url.empty()) {
         std::cout << "URL is empty!\n";
         throw URLShortener::exception::ProviderException(
@@ -51,7 +52,7 @@ std::string Provider::shorten(std::string_view url) {
     }
 
     auto body = create_request_body(url);
-    auto response = http_client->post(body, request_info);
+    auto response = co_await http_client->post(body, request_info);
 
     if (response.status_code != HTTP::code::OK || response.body.empty()) {
         throw URLShortener::exception::ProviderException(
@@ -60,5 +61,5 @@ std::string Provider::shorten(std::string_view url) {
         );
     }
 
-    return get_short_url(response.body);
+    co_return get_short_url(response.body);
 }

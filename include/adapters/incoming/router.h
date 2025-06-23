@@ -8,7 +8,7 @@ class Router : public IRouter {
 public:
     void add_route(HTTP::method method, const std::string& path,
                     handler_ptr handler) override;
-    void route(const Request& req, Response& res) override;
+    async_task<void> route(const Request& req, Response& res) override;
 private:
     std::map<HTTP::method, std::map<std::string, handler_ptr>> routes_;
 };

@@ -1,6 +1,7 @@
 #pragma once
 #include "core/ports/factory_interface.h"
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
@@ -15,6 +16,8 @@ public:
     std::shared_ptr<IProviderFactory> getProviderFactory() override;
     std::shared_ptr<IEnvReader> getEnv() override;
     std::shared_ptr<IHttpClient> getHttpClient() override;
+    asio::io_context& getContext();
+    asio::ssl::context& getSslContext();
 private:
     std::shared_ptr<IRouter> router;
     std::shared_ptr<IParser> parser;
@@ -22,4 +25,7 @@ private:
     std::shared_ptr<IProviderFactory> provider_factory;
     std::shared_ptr<IEnvReader> env_reader;
     std::shared_ptr<IHttpClient> http_client;
+
+    asio::io_context io_ctx_;
+    asio::ssl::context ssl_ctx_;
 };

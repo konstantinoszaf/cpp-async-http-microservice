@@ -7,7 +7,7 @@ int main() {
         Factory factory;
 
         ServerSettings settings{8080};
-        Server server{settings, factory};
+        Server server{settings, factory, factory.getContext()};
         server.start();
     } catch (std::exception& e) {
         std::cout << "Server error: " << e.what() << '\n';

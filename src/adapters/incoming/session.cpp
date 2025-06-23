@@ -11,19 +11,24 @@ void Session::read() {
         req_,
         [this, self](beast::error_code ec, std::size_t) {
             if (!ec) {
-                handle_request();
+                boost::asio::co_spawn(
+                    socket_.get_executor(),
+                    [self]() mutable { return self->handle_request(); },
+                    boost::asio::detached
+                );
             }
         }
     );
 }
 
-void Session::handle_request() {
+async_task<void> Session::handle_request() {
     Request request = BoostHttpAdapter::from_boost(req_);
     Response response;
-    router_->route(request, response);
+    co_await router_->route(request, response);
 
     res_ = BoostHttpAdapter::to_boost(response);
     write();
+    co_return;
 }
 
 void Session::write() {

@@ -18,7 +18,7 @@ public:
     void read() override;
 private:
     void write() override;
-    void handle_request() override;
+    async_task<void> handle_request() override;
 
     tcp::socket socket_;
     std::shared_ptr<IRouter> router_;

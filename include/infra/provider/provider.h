@@ -1,6 +1,7 @@
 #pragma once
 #include "core/ports/provider_interface.h"
 #include "core/domain/types.h"
+#include "core/ports/task.h"
 #include <memory>
 
 class IHttpClient;
@@ -13,7 +14,7 @@ public:
             ProviderType type_,
             std::shared_ptr<IEnvReader> env,
             std::string_view jsonKey);
-    std::string shorten(std::string_view url) override;
+    async_task<std::string> shorten(std::string_view url) override;
 protected:
     virtual std::string get_short_url(std::string_view payload) = 0;
     std::string api_key;

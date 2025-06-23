@@ -20,8 +20,8 @@ struct ServerSettings {
 
 class Server : public IServer {
 public:
-    Server(ServerSettings& settings, IFactory& factory_)
-      : io_context{},
+    Server(ServerSettings& settings, IFactory& factory_, asio::io_context& io_ctx_)
+      : io_context{io_ctx_},
         acceptor(io_context, tcp::endpoint(tcp::v4(), settings.port)), factory{factory_} {}
 
     void start() override {
@@ -44,7 +44,7 @@ private:
             });
     }
 
-    asio::io_context io_context;
+    asio::io_context& io_context;
     tcp::acceptor acceptor;
     IFactory& factory;
 };

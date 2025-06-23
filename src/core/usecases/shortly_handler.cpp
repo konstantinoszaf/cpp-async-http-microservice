@@ -6,6 +6,7 @@
 #include "adapters/outgoing/boost_http_adapter.h"
 #include <boost/json.hpp>
 #include <iostream>
+#include <boost/asio/awaitable.hpp>
 
 namespace json = boost::json;
 
@@ -33,7 +34,7 @@ ShortlyHandler::ShortlyHandler(std::shared_ptr<IParser> parser,
                                 std::shared_ptr<IProviderFactory> provider)
 : json_parser(parser), provider_factory(provider) {}
 
-void ShortlyHandler::handle(const Request& request, Response& response) {
+async_task<void> ShortlyHandler::handle(const Request& request, Response& response) {
     try {
         if (request.body.empty()) {
             throw URLShortener::exception::ValidationException("Request body is empty");
@@ -42,7 +43,7 @@ void ShortlyHandler::handle(const Request& request, Response& response) {
         auto [url, provider_type] = json_parser->parse(request.body);
         auto provider = provider_factory->createProvider(provider_type);
 
-        std::string short_url = provider->shorten(url);
+        std::string short_url = co_await provider->shorten(url);
 
         json::object data_object;
         data_object["url"] = url;
@@ -60,4 +61,5 @@ void ShortlyHandler::handle(const Request& request, Response& response) {
         std:: cout << "Boost error: " << e.message() << '\n';
         create_response(response, 1, e.message(), HTTP::code::InternalServerError, {});
     }
+    co_return;
 }
