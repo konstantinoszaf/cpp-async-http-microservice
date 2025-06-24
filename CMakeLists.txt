@@ -37,7 +37,7 @@ target_include_directories(core
 add_library(adapters STATIC
     src/adapters/incoming/session.cpp
     src/adapters/incoming/router.cpp
-    #src/adapters/incoming/server.cpp
+    src/adapters/incoming/server.cpp
     src/adapters/outgoing/boost_http_adapter.cpp
 )
 target_link_libraries(adapters
@@ -68,7 +68,6 @@ add_library(infra STATIC
     src/infra/provider/bitly.cpp
     src/infra/provider/tinyurl.cpp
     src/infra/client/http_client.cpp
-    #src/infra/environment/env_reader.cpp
     src/infra/factory/provider_factory.cpp
 )
 target_link_libraries(infra

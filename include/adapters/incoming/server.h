@@ -8,8 +8,6 @@
 #include "functional"
 
 namespace asio = boost::asio;
-namespace beast = boost::beast;
-namespace http = beast::http;
 
 using tcp = asio::ip::tcp;
 
@@ -20,35 +18,17 @@ struct ServerSettings {
 
 class Server : public IServer {
 public:
-    Server(ServerSettings& settings, IFactory& factory_, asio::io_context& io_ctx_)
-      : io_context{io_ctx_},
-        acceptor(io_context, tcp::endpoint(tcp::v4(), settings.port)), factory{factory_} {}
+    Server(const ServerSettings& settings, IFactory& factory_, asio::io_context& io_ctx_);
 
-    void start() override {
-        std::cout << "HTTP Server running on port "
-                  << acceptor.local_endpoint().port()
-                  << "...\n";
-        accept();
-        io_context.run();
-    }
-
+    void start() override;
+    void stop();
 private:
-    void accept() {
-        acceptor.async_accept(
-            [this](boost::system::error_code ec, tcp::socket sock) {
-                if (!ec) {
-                    asio::co_spawn(
-                        io_context,
-                        [s = factory.createSession(std::move(sock))]{
-                            return s->run();
-                        }, asio::detached
-                    );
-                }
-                accept();
-            });
-    }
+    void accept();
+    void setup_signal_handlers();
 
     asio::io_context& io_context;
     tcp::acceptor acceptor;
     IFactory& factory;
+    asio::executor_work_guard<asio::io_context::executor_type> work_guard;
+    asio::signal_set signals;
 };

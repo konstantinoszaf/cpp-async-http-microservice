@@ -15,6 +15,11 @@ class Session : public ISession {
 public:
     Session(tcp::socket sock, std::shared_ptr<IRouter> router)
       : socket_(std::move(sock)), router_(router) {}
+
+    ~Session() {
+        boost::system::error_code ec;
+        socket_.close(ec);
+    }
     async_task<void> run() override;
 private:
     tcp::socket socket_;
