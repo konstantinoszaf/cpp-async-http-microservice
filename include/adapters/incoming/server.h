@@ -37,8 +37,12 @@ private:
         acceptor.async_accept(
             [this](boost::system::error_code ec, tcp::socket sock) {
                 if (!ec) {
-                    auto session = factory.createSession(std::move(sock));
-                    session->read();
+                    asio::co_spawn(
+                        io_context,
+                        [s = factory.createSession(std::move(sock))]{
+                            return s->run();
+                        }, asio::detached
+                    );
                 }
                 accept();
             });

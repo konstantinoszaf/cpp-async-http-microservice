@@ -11,15 +11,12 @@ namespace http = beast::http;
 
 using tcp = asio::ip::tcp;
 
-class Session : public ISession, public std::enable_shared_from_this<Session> {
+class Session : public ISession {
 public:
     Session(tcp::socket sock, std::shared_ptr<IRouter> router)
       : socket_(std::move(sock)), router_(router) {}
-    void read() override;
+    async_task<void> run() override;
 private:
-    void write() override;
-    async_task<void> handle_request() override;
-
     tcp::socket socket_;
     std::shared_ptr<IRouter> router_;
     beast::flat_buffer buffer_;
