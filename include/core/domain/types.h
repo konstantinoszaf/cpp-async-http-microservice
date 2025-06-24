@@ -4,7 +4,8 @@
 
 enum class  ProviderType {
     BITLY   = 0,
-    TINYURL = 1
+    TINYURL = 1,
+    MAX
 };
 
 namespace HTTP {
