@@ -68,3 +68,8 @@ struct RequestInfo {
     std::string port;
     std::string authorization_token;
 };
+
+struct Endpoint {
+    std::string address;
+    unsigned int port;
+};

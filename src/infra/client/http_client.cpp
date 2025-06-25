@@ -5,10 +5,10 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/asio/redirect_error.hpp>
+#include <boost/beast/http/serializer.hpp>
 extern "C" {
     #include <openssl/ssl.h>
 }
-#include <chrono>
 #include <iostream>
 
 namespace beast = boost::beast;
@@ -17,8 +17,10 @@ namespace asio = boost::asio;
 namespace ssl = boost::asio::ssl;
 using tcp = asio::ip::tcp;
 
-HttpClient::HttpClient(boost::asio::io_context& io_ctx_, boost::asio::ssl::context& ssl_ctx_)
-: io_ctx{io_ctx_}, ssl_ctx{ssl_ctx_} {
+HttpClient::HttpClient(boost::asio::io_context& io_ctx_,
+                        boost::asio::ssl::context& ssl_ctx_,
+                        std::shared_ptr<IDnsCache> dns_cache_)
+: io_ctx{io_ctx_}, ssl_ctx{ssl_ctx_}, dns_cache{dns_cache_} {
     ssl_ctx.set_default_verify_paths();
 }
 
@@ -26,18 +28,23 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
     auto ex = co_await asio::this_coro::executor;
 
     boost::system::error_code ec;
-    tcp::resolver resolver(asio::make_strand(ex));
 
-    auto const results = co_await resolver.async_resolve(config.host, config.port, asio::redirect_error(asio::use_awaitable, ec));
+    auto results = co_await dns_cache->resolve(config.host, config.port);
+    if (results.empty()) {
+        co_return bad_response("DNS resolve failed", HTTP::code::ServiceUnavailable);
+    }
 
-    if (ec) {
-        std::cout << "DNS resolve failed\n"
-                    << "  host    = " << config.host << "\n"
-                    << "  port    = " << config.port << "\n"
-                    << "  code    = " << ec.value() << "\n"
-                    << "  category= " << ec.category().name() << "\n"
-                    << "  message = " << ec.message() << "\n";
-        co_return bad_response(ec.message(), HTTP::code::ServiceUnavailable);
+    std::vector<tcp::endpoint> native_res;
+    native_res.reserve(results.size());
+    for (auto const& r : results) {
+        auto addr = boost::asio::ip::make_address(r.address, ec);
+        if (ec) {
+            continue;
+        }
+        native_res.emplace_back(addr, r.port);
+    }
+    if (native_res.empty()) {
+        co_return bad_response("No valid IPs", HTTP::code::ServiceUnavailable);
     }
 
     beast::ssl_stream<beast::tcp_stream> stream(asio::make_strand(ex), ssl_ctx);
@@ -55,7 +62,7 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
     auto& tcp_stream  = stream.next_layer();
     co_await asio::async_connect(
         tcp_stream.socket(),
-        results,
+        native_res,
         asio::redirect_error(asio::use_awaitable, ec)
     );
 
@@ -65,13 +72,13 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
     }
 
     co_await stream.async_handshake(ssl::stream_base::client, asio::redirect_error(asio::use_awaitable, ec));
-
+    
     if (ec) {
         std::cout << "Handshake failed.\n";
         co_return bad_response(ec.message(), HTTP::code::BadGateway);
     }
 
-    http::request<http::string_body> req{http::verb::post, config.endpoint, 11};
+    http::request<http::dynamic_body> req{http::verb::post, config.endpoint, 11};
     req.set(http::field::host, config.host);
     req.set(http::field::accept, "application/json");
     req.set(http::field::content_type, "application/json");
@@ -80,16 +87,19 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
         req.set(http::field::authorization, config.authorization_token);
     }
 
-    req.body() = payload;
-    req.prepare_payload();
+    {
+        auto os = boost::beast::ostream(req.body());
+        os << payload;
+    }
 
+    req.prepare_payload();
+    tcp_stream.socket().set_option(boost::asio::ip::tcp::no_delay{true});
     co_await http::async_write(stream, req, asio::redirect_error(asio::use_awaitable, ec));
 
     if (ec) {
         std::cout << "Could not write\n";
         co_return bad_response(ec.message(), HTTP::code::BadGateway);
     }
-
     beast::flat_buffer buffer;
     http::response<http::string_body> res;
 

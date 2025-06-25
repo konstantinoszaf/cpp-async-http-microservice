@@ -24,8 +24,12 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/unit/*.cpp")
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/integration/*.cpp")
+file(GLOB UNIT_TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/unit/*.cpp")
+file(GLOB INT_TEST_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/integration/*.cpp")
+set(TEST_SOURCES
+    ${UNIT_TEST_SOURCES}
+    ${INT_TEST_SOURCES}
+)
 foreach(test_src IN LISTS TEST_SOURCES)
   get_filename_component(test_name ${test_src} NAME_WE)
 
