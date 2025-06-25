@@ -3,15 +3,34 @@ FROM debian:trixie AS builder
 WORKDIR /URLShortener
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    git \
     g++ \
     cmake \
-    libboost-system-dev \
+    make \
     libboost-thread-dev \
-    libboost-date-time-dev \
     libboost-json-dev \
     libssl-dev \
-    make \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/redis/hiredis.git \
+    && cd hiredis \
+    && mkdir build && cd build \
+    && cmake .. \
+    && cmake --build . -- -j$(nproc) \
+    && cmake --install . \
+    && cd /URLShortener \
+    && rm -rf hiredis
+
+RUN git clone --depth 1 https://github.com/sewenew/redis-plus-plus.git \
+    && cd redis-plus-plus \
+    && mkdir build && cd build \
+    && cmake .. \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build . -- -j$(nproc) \
+    && cmake --install . \
+    && rm -rf /URLShortener/redis-plus-plus
 
 COPY . /URLShortener
 
@@ -25,9 +44,7 @@ FROM debian:trixie-slim AS staging
 WORKDIR /URLShortener
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libboost-system1.83.0 \
     libboost-thread1.83.0 \
-    libboost-date-time1.83.0 \
     libboost-json1.83.0 \
     libssl3 \
     ca-certificates \

@@ -11,6 +11,7 @@
 #include "infra/factory/provider_factory.h"
 #include "infra/network/dns_cache.h"
 #include "infra/network/dns_resolver.h"
+#include "infra/cache/redis_client.h"
 
 Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_client} {
     ssl_ctx_.set_default_verify_paths();
@@ -38,9 +39,10 @@ Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_clien
 
     // 4) create environment reader
     env_reader = std::make_shared<EnvReader>();
-
+    auto uri = env_reader->get("REDIS_URI");
+    auto redis = std::make_shared<Cache::Redis>(uri);
     // 5) Method that creates the provider
-    provider_factory = std::make_shared<ProviderFactory>(http_client, env_reader);
+    provider_factory = std::make_shared<ProviderFactory>(http_client, env_reader, redis);
 
     // 6) Handlers
     router = std::make_shared<Router>();

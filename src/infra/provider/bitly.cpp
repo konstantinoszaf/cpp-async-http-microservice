@@ -5,8 +5,10 @@
 
 namespace json = boost::json;
 
-Bitly::Bitly(std::shared_ptr<IHttpClient> client, std::shared_ptr<IEnvReader> env)
- : Provider(client, ProviderType::BITLY, env, "long_url") {
+Bitly::Bitly(std::shared_ptr<IHttpClient> client,
+            std::shared_ptr<IEnvReader> env,
+            std::shared_ptr<ICacheClient> redis_)
+ : Provider(client, ProviderType::BITLY, env, "long_url", redis_) {
     RequestInfo info {
         "api-ssl.bitly.com",
         "/v4/shorten",

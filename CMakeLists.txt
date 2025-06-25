@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # External deps
 find_package(OpenSSL REQUIRED)
+find_package(redis++ CONFIG REQUIRED)
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
     system
@@ -44,11 +45,7 @@ target_link_libraries(adapters
   PUBLIC
     core
   PRIVATE
-    Boost::system
     Boost::thread
-    Boost::date_time
-    Boost::chrono
-    Boost::atomic
     Boost::json
 )
 target_include_directories(adapters
@@ -71,6 +68,7 @@ add_library(infra STATIC
     src/infra/factory/provider_factory.cpp
     src/infra/network/dns_cache.cpp
     src/infra/network/dns_resolver.cpp
+    src/infra/cache/redis_client.cpp
 )
 target_link_libraries(infra
   PUBLIC
@@ -79,6 +77,7 @@ target_link_libraries(infra
     Boost::json
     OpenSSL::SSL
     OpenSSL::Crypto
+    redis++::redis++_static
 )
 target_include_directories(infra
   PUBLIC

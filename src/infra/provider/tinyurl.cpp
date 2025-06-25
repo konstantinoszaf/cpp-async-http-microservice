@@ -5,8 +5,10 @@
 
 namespace json = boost::json;
 
-TinyURL::TinyURL(std::shared_ptr<IHttpClient> client, std::shared_ptr<IEnvReader> env)
- : Provider(client, ProviderType::TINYURL, env, "url") {
+TinyURL::TinyURL(std::shared_ptr<IHttpClient> client,
+                std::shared_ptr<IEnvReader> env,
+                std::shared_ptr<ICacheClient> redis_)
+ : Provider(client, ProviderType::TINYURL, env, "url", redis_) {
     RequestInfo info {
         "api.tinyurl.com",
         "/create",
