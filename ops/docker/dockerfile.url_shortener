@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libboost-thread1.83.0 \
     libboost-json1.83.0 \
     libssl3 \
+    libhiredis-dev \
     ca-certificates \
     netbase \
     && rm -rf /var/lib/apt/lists/*

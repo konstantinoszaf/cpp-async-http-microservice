@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - redis/deployment.yaml
+  - redis/service.yaml
+  - url_shortener/deployment.yaml
+  - url_shortener/service.yaml
+
+configMapGenerator:
+  - name: urlshortener-config
+    literals:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+images:
+  - name: redis
+    newName: redis
+    newTag: "6-alpine"

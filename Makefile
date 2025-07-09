@@ -1,12 +1,17 @@
 APP_NAME         := URLShortener
-DOCKER_NAME      := url_shortener
 DOCKER_DIR       := ops/docker
 LOCAL_BUILD_DIR  := build
 DOCKER_PORT      := 8080
 VCPKG_TOOLCHAIN  := $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
+SERVICES         := url_shortener
+NAMESPACE        := shortener
+PREFIX           := dev
+PREFIXNAME       := $(PREFIX)-$(NAMESPACE)
+GREEN=\033[0;32m
+NC=\033[0m # No Color
 
-.PHONY: all local clean test test-run
-all: build-image
+.PHONY: all local clean test test-run image deploy deploy-update
+all: image
 
 local:
 	@mkdir -p $(LOCAL_BUILD_DIR)
@@ -35,13 +40,27 @@ test:
 test-run:
 	@cd $(LOCAL_BUILD_DIR) && ctest --output-on-failure
 
-build-image:
-	docker build -f $(DOCKER_DIR)/Dockerfile -t $(DOCKER_NAME):latest .
+image-%:
+	@$(MAKE) image SERVICES="$*"
+
+image:
+	@echo "Starting to build services..."
+	@for service in $(SERVICES); do \
+ 		echo "Building $$service..."; \
+		docker build -f $(DOCKER_DIR)/dockerfile.$$service --no-cache \
+		           -t $(PREFIXNAME)-$$service:latest .; \
+		docker tag $(PREFIXNAME)-$$service:latest \
+		           localhost:32000/$(PREFIXNAME)-$$service:latest; \
+		docker push localhost:32000/$(PREFIXNAME)-$$service:latest; \
+		echo  "$(GREEN)$$service built!$(NC)"; \
+	done
+	@echo "$(GREEN)Build process complete!$(NC)"
 
 deploy:
-	docker rm -f $(DOCKER_NAME)
-	docker run -d --name $(DOCKER_NAME) \
-					-p $(DOCKER_PORT):$(DOCKER_PORT) \
-					-e API_KEY_BITLY=${API_KEY_BITLY} \
-					-e API_KEY_TINYURL=${API_KEY_TINYURL} \
-					 $(DOCKER_NAME):latest
+	microk8s kubectl create namespace $(NAMESPACE) || true
+	microk8s kubectl apply -k ops/k8s/dev -n $(NAMESPACE)
+	@echo "$(GREEN)Deployed successfully!$(NC)"
+
+deploy-update:
+	microk8s kubectl delete namespace $(NAMESPACE)
+	@$(MAKE) deploy

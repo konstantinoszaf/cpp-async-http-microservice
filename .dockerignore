@@ -3,6 +3,7 @@
 .gitignore
 Dockerfile
 docker-compose.yml
+secrets.env
 
 # build artifacts
 /local_build_dir/

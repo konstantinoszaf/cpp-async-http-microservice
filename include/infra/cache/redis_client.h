@@ -5,7 +5,7 @@
 namespace Cache{
 class Redis : public ICacheClient {
     public:
-    Redis(const std::string& uri);
+    Redis(const std::string& host, int port);
     std::optional<std::string> get(std::string_view key) override;
     void set(std::string_view key, std::string_view value, int ttl) override;
 private:

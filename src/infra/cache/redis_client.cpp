@@ -1,11 +1,16 @@
 #include "infra/cache/redis_client.h"
 
-using namespace Cache;
+Cache::Redis::Redis(const std::string &host, int port)
+    : redis_client([&] {
+        sw::redis::ConnectionOptions opts;
+        opts.host = host;
+        opts.port = port;
+        sw::redis::ConnectionPoolOptions pool_opts;
+        return sw::redis::Redis(opts, pool_opts);
+    }())
+{}
 
-Redis::Redis(const std::string& uri)
-: redis_client(uri) {}
-
-std::optional<std::string> Redis::get(std::string_view key) {
+std::optional<std::string> Cache::Redis::get(std::string_view key) {
     if (key.empty()) return std::nullopt;
 
     sw::redis::StringView redis_key{ key.data(), key.size() };
@@ -14,7 +19,7 @@ std::optional<std::string> Redis::get(std::string_view key) {
     return result ? std::optional<std::string>(*result) : std::nullopt;
 }
 
-void Redis::set(std::string_view key, std::string_view value, int ttl) {
+void Cache::Redis::set(std::string_view key, std::string_view value, int ttl) {
     if (key.empty() || value.empty()) return;
 
     if (ttl <= 0) ttl = 3600;

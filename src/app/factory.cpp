@@ -39,12 +39,17 @@ Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_clien
 
     // 4) create environment reader
     env_reader = std::make_shared<EnvReader>();
-    auto uri = env_reader->get("REDIS_URI");
-    auto redis = std::make_shared<Cache::Redis>(uri);
-    // 5) Method that creates the provider
+
+    // 5) create redis client
+    std::string host = env_reader->get("REDIS_HOST");
+    std::cout << "Redis host is " << host << '\n';
+    int port = std::stoi(env_reader->get("REDIS_PORT"));
+    std::cout << "Redis port is: " << port << '\n';
+    auto redis = std::make_shared<Cache::Redis>(host, port);
+    // 6) Method that creates the provider
     provider_factory = std::make_shared<ProviderFactory>(http_client, env_reader, redis);
 
-    // 6) Handlers
+    // 7) Handlers
     router = std::make_shared<Router>();
     router->add_route(HTTP::method::POST, "/shortly", std::make_shared<ShortlyHandler>(parser, provider_factory));
 }

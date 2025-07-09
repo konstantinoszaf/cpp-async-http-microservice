@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # External deps
 find_package(OpenSSL REQUIRED)
+find_package(hiredis CONFIG REQUIRED)
 find_package(redis++ CONFIG REQUIRED)
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
@@ -77,6 +78,7 @@ target_link_libraries(infra
     Boost::json
     OpenSSL::SSL
     OpenSSL::Crypto
+    hiredis::hiredis
     redis++::redis++_static
 )
 target_include_directories(infra

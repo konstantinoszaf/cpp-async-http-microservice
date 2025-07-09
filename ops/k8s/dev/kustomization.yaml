@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+namespace: shortener
+
+secretGenerator:
+  - name: urlshortener-secrets
+    env: secret.env
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+images:
+  - name: url_shortener
+    newName: localhost:32000/dev-shortener-url_shortener
+    newTag: latest

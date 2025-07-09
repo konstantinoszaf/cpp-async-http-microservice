@@ -4,6 +4,7 @@
 
 int main() {
     try {
+        std::cout.setf(std::ios::unitbuf);
         Factory factory;
 
         ServerSettings settings{8080};
