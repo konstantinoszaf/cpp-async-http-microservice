@@ -74,12 +74,12 @@ add_library(infra STATIC
 target_link_libraries(infra
   PUBLIC
     core
+    redis++::redis++_static
   PRIVATE
     Boost::json
     OpenSSL::SSL
     OpenSSL::Crypto
     hiredis::hiredis
-    redis++::redis++_static
 )
 target_include_directories(infra
   PUBLIC
