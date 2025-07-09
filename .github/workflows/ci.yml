@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+    env:
+      HOME: /home/runner
+      VCPKG_TOOLCHAIN: /home/runner/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential \
+            cmake \
+            git \
+            libssl-dev \
+            libboost-system-dev \
+            libboost-thread-dev \
+            libboost-date-time-dev \
+            libboost-chrono-dev \
+            libboost-atomic-dev \
+            libboost-json-dev
+
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
+          $HOME/vcpkg/bootstrap-vcpkg.sh
+
+      - name: Install vcpkg ports
+        run: |
+          $HOME/vcpkg/vcpkg install \
+            hiredis \
+            redis-plus-plus \
+            gtest
+
+      - name: Build unit & integration tests
+        run: make test
+
+      - name: Run unit & integration tests
+        run: make test-run

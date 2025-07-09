@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(URLShortenerTests)
 
-# bring in Boost so we can compile rule_interface.h
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
     system
@@ -11,7 +10,6 @@ find_package(Boost 1.83 REQUIRED
     atomic
     json
 )
-
 
 include(FetchContent)
 FetchContent_Declare(
