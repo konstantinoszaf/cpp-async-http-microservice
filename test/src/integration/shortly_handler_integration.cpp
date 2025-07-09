@@ -35,6 +35,20 @@ public:
     std::string get(std::string_view) override { return "dummy-key"; }
 };
 
+class StubRedis : public ICacheClient {
+public:
+  std::optional<std::string> get(std::string_view key) override {
+    auto it = _store.find(std::string(key));
+    if (it == _store.end()) return std::nullopt;
+    return it->second;
+  }
+  void set(std::string_view key, std::string_view value, int) override {
+    _store[std::string(key)] = std::string(value);
+  }
+private:
+  std::unordered_map<std::string, std::string> _store;
+};
+
 class IntegrationTest : public ::testing::Test {
 protected:
     boost::asio::io_context ioc;
@@ -43,6 +57,7 @@ protected:
     std::shared_ptr<StubHttpClient> http_client;
     std::shared_ptr<ProviderFactory> factory;
     std::shared_ptr<ShortlyHandler> handler;
+    std::shared_ptr<StubRedis> redis;
 
     void SetUp() override {
         std::vector<std::unique_ptr<IValidationRule>> rules;
@@ -58,7 +73,8 @@ protected:
         parser = std::make_shared<JsonParser>(validator);
         env = std::make_shared<StubEnv>();
         http_client = std::make_shared<StubHttpClient>();
-        factory = std::make_shared<ProviderFactory>(http_client, env);
+        redis = std::make_shared<StubRedis>();
+        factory = std::make_shared<ProviderFactory>(http_client, env, redis);
         handler = std::make_shared<ShortlyHandler>(parser, factory);
     }
 
@@ -124,10 +140,29 @@ TEST_F(IntegrationTest, ValidationInProvider) {
   EXPECT_EQ(out["reason"].as_string(), "url value can not be empty");
 }
 
-// invalid JSON in request → parser throws → 400 BadRequest
+// invalid JSON in request -> parser throws -> 400 BadRequest
 TEST_F(IntegrationTest, BadJsonRequest) {
   auto resp = run_handler("not valid json");
   EXPECT_EQ(resp.status_code, HTTP::code::BadRequest);
   auto out = json::parse(resp.body).as_object();
   EXPECT_EQ(out["reason"].as_string(), "Invalid JSON format");
+}
+
+TEST_F(IntegrationTest, HandlerCachesProviderResult) {
+  http_client->set_response({ HTTP::code::OK, {}, R"({"link":"short.ly/cachetest"})" });
+
+  auto body = R"({"url":"https://example.com","provider":"bitly"})";
+  auto resp1 = run_handler(body);
+  EXPECT_EQ(resp1.status_code, HTTP::code::OK);
+
+  auto obj1 = boost::json::parse(resp1.body).as_object();
+  EXPECT_EQ(obj1["data"].as_object()["shortened"].as_string(),
+            "short.ly/cachetest");
+
+  ioc.restart();
+
+  auto resp2 = run_handler(body);
+  EXPECT_EQ(resp2.status_code, HTTP::code::OK);
+  auto obj2 = boost::json::parse(resp2.body).as_object();
+  EXPECT_EQ(obj2["data"].as_object()["shortened"].as_string(), "short.ly/cachetest");
 }
