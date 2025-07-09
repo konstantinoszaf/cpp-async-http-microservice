@@ -66,9 +66,10 @@ You need two API keys:
 - [bit.ly](https://dev.bitly.com/)           -> set `API_KEY_BITLY`
 - [tinyurl.com](https://tinyurl.com/app/dev) -> set `API_KEY_TINYURL`
 
+The API keys must be in the ops/k8s/dev/secret.env file with the below format
 ```
-export API_KEY_BITLY="your-bitly-key"
-export API_KEY_TINYURL="your-tinyurl-key"
+API_KEY_BITLY=your-bitly-key
+API_KEY_TINYURL=your-tinyurl-key
 ```
 
 # Build & Run
