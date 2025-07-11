@@ -116,16 +116,16 @@ TEST_F(IntegrationTest, HappyPath) {
   EXPECT_EQ(data["url"].as_string(), "http://example.com");
 }
 
-// provider-side HTTP error -> ProviderException → mapping to HTTP
+// provider-side HTTP error -> ProviderException -> mapping to HTTP
 TEST_F(IntegrationTest, UpstreamError) {
-  http_client->set_response({ HTTP::code::ServiceUnavailable, {}, "down for maintenance" });
+  http_client->set_response({ HTTP::code::ServiceUnavailable, {}, R"({"description":"down for maintenance"})" });
 
   auto resp = run_handler(R"({"url":"u","provider":"bitly"})");
   EXPECT_EQ(resp.status_code, HTTP::code::ServiceUnavailable);
 
   auto out = json::parse(resp.body).as_object();
   EXPECT_EQ(out["result"].as_int64(), 1);
-  EXPECT_EQ(out["reason"].as_string(), "down for maintenance");
+  EXPECT_STREQ(out["reason"].as_string().c_str(), "down for maintenance");
 }
 
 // empty URL passed into provider -> validation ProviderException

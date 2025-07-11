@@ -26,7 +26,7 @@ Provider::Provider(std::shared_ptr<IHttpClient> client_,
     }
 }
 
-constexpr std::string_view Provider::get_env_key(ProviderType type) {
+std::string_view Provider::get_env_key(ProviderType type) {
     switch (type)
     {
     case ProviderType::TINYURL:
@@ -60,7 +60,7 @@ async_task<std::string> Provider::shorten(std::string_view url) {
 
     if (response.status_code != HTTP::code::OK || response.body.empty()) {
         throw URLShortener::exception::ProviderException(
-            std::string{response.body},
+            get_error_message(response.body),
             response.status_code
         );
     }

@@ -16,6 +16,7 @@ public:
     using Bitly::api_key;
     using Bitly::request_info;
     using Bitly::json_key;
+    using Bitly::get_error_message;
 };
 
 class TestBitly : public ::testing::Test {
@@ -121,6 +122,36 @@ TEST_F(TestBitly, ShortenThrowsOnEmptyUrl) {
     EXPECT_TRUE(exception_thrown);
 }
 
+class BitlyErrorTest : public TestBitly,
+    public ::testing::WithParamInterface<std::pair<std::string, std::string>> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    VariousErrorScenarios,
+    BitlyErrorTest,
+    ::testing::Values(
+        std::make_pair(
+            R"({"message":"UNPROCESSABLE_ENTITY","resource":"bitlinks","description":"The JSON value provided is invalid."})",
+            "The JSON value provided is invalid."
+        ),
+        std::make_pair(
+            R"({"message":"UNPROCESSABLE_ENTITY","resource":"bitlinks"})",
+            "UNPROCESSABLE_ENTITY"
+        ),
+        std::make_pair(
+            R"({"resource":"bitlinks"})",
+            "Unknown error"
+        )
+    )
+);
+
+TEST_P(BitlyErrorTest, TestParsingErrorResponse) {
+    const auto& [payload, expected_msg] = GetParam();
+    TestableBitly provider{http_client, env, redis};
+
+    std::string actual_msg = provider.get_error_message(payload);
+
+    EXPECT_EQ(expected_msg, actual_msg);
+}
 
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
