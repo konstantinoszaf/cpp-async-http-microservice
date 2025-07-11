@@ -19,14 +19,15 @@ public:
     async_task<std::string> shorten(std::string_view url) override;
 protected:
     virtual std::string get_short_url(std::string_view payload) = 0;
+    virtual std::string get_error_message(std::string_view error) = 0;
+
     std::string api_key;
     std::string json_key;
     RequestInfo request_info;
 
 private:
     std::string create_request_body(std::string_view url) override;
-    // json::object validate_response_body(std::string_view payload);
-    constexpr std::string_view get_env_key(ProviderType type);
+    std::string_view get_env_key(ProviderType type);
     std::shared_ptr<IHttpClient> http_client;
     std::shared_ptr<ICacheClient> redis;
 };

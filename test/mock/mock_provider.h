@@ -8,4 +8,5 @@ public:
     MOCK_METHOD(async_task<std::string>, shorten, (std::string_view), (override));
     MOCK_METHOD(std::string, create_request_body, (std::string_view), (override));
     MOCK_METHOD(std::string, get_short_url, (std::string_view), (override));
+    MOCK_METHOD(std::string, get_error_message, (std::string_view), (override));
 };

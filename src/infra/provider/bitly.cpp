@@ -9,14 +9,12 @@ Bitly::Bitly(std::shared_ptr<IHttpClient> client,
             std::shared_ptr<IEnvReader> env,
             std::shared_ptr<ICacheClient> redis_)
  : Provider(client, ProviderType::BITLY, env, "long_url", redis_) {
-    RequestInfo info {
-        "api-ssl.bitly.com",
-        "/v4/shorten",
-        "https",
-        "Bearer " + api_key
-    };
-
-    request_info = info;
+    request_info = RequestInfo {
+                    "api-ssl.bitly.com",
+                    "/v4/shorten",
+                    "https",
+                    "Bearer " + api_key
+                };
 };
 
 std::string Bitly::get_short_url(std::string_view payload) {
@@ -33,3 +31,21 @@ std::string Bitly::get_short_url(std::string_view payload) {
 
     return obj.at("link").as_string().c_str();
 }
+
+std::string Bitly::get_error_message(std::string_view payload) {
+    boost::system::error_code ec;
+    auto j = json::parse(payload, ec);
+
+    if(ec || !j.is_object()) return "Unknown error";
+
+    const json::object& obj = j.as_object();
+
+    const auto* error = obj.if_contains("description");
+    if (error) return error->as_string().c_str();
+
+    error = obj.if_contains("message");
+    if (error) return error->as_string().c_str();
+
+    return "Unknown error";
+}
+
