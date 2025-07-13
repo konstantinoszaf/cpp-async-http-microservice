@@ -1,0 +1,29 @@
+FROM debian:trixie AS deps
+
+WORKDIR /vcpkg
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      git \
+      curl \
+      zip \
+      unzip \
+      tar \
+      pkg-config \
+      libssl-dev \
+      g++ \
+      cmake \
+      make \
+    && rm -rf /var/lib/apt/lists/*
+
+# bootstrap & install exactly the Boost ports you need (1.88+)
+RUN git clone --depth=1 https://github.com/microsoft/vcpkg.git /vcpkg \
+ && /vcpkg/bootstrap-vcpkg.sh \
+ && /vcpkg/vcpkg install \
+      boost-system:x64-linux \
+      boost-thread:x64-linux \
+      boost-json:x64-linux \
+      boost-beast:x64-linux \
+      boost-redis:x64-linux \
+      boost-asio[ssl]:x64-linux \
+    --clean-after-build

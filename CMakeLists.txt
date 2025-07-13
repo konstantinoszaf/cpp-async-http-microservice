@@ -2,22 +2,18 @@ cmake_minimum_required(VERSION 3.14)
 project(URLShortener LANGUAGES CXX)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD      20)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# External deps
-find_package(OpenSSL REQUIRED)
-find_package(hiredis CONFIG REQUIRED)
-find_package(redis++ CONFIG REQUIRED)
-find_package(Boost 1.83 REQUIRED
-  COMPONENTS
+find_package(Boost 1.84 CONFIG REQUIRED COMPONENTS
     system
     thread
-    date_time
-    chrono
-    atomic
     json
+    redis
+    beast
 )
+
+find_package(OpenSSL REQUIRED)
 
 # -----------------------------------------------------------------------------
 # Core (pure domain & use-cases, no external deps)
@@ -31,6 +27,7 @@ target_link_libraries(core PUBLIC
 target_include_directories(core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    ${Boost_INCLUDE_DIRS}
 )
 
 # -----------------------------------------------------------------------------
@@ -48,6 +45,7 @@ target_link_libraries(adapters
   PRIVATE
     Boost::thread
     Boost::json
+    Boost::system
 )
 target_include_directories(adapters
   PUBLIC
@@ -72,18 +70,18 @@ add_library(infra STATIC
     src/infra/cache/redis_client.cpp
 )
 target_link_libraries(infra
-  PUBLIC
-    core
-    redis++::redis++_static
+  PUBLIC core
+    Boost::redis
   PRIVATE
+    Boost::system
     Boost::json
+    Boost::beast
     OpenSSL::SSL
     OpenSSL::Crypto
-    hiredis::hiredis
 )
-target_include_directories(infra
-  PUBLIC
+target_include_directories(infra PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    ${Boost_INCLUDE_DIRS}
 )
 
 # -----------------------------------------------------------------------------
@@ -97,6 +95,7 @@ target_link_libraries(URLShortener
   PRIVATE
     adapters
     infra
+    Boost::system
 )
 
 # -----------------------------------------------------------------------------
