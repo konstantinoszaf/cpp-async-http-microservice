@@ -77,6 +77,12 @@ API_KEY_TINYURL=your-tinyurl-key
 make base #first time only to build the base image with all dependencies
 make
 make deploy
+
+#check pod status
+kubectl get pods -n shortener
+
+#portforward
+kubectl port-forward svc/url-shortener 8080:8080 -n shortener &
 ```
 
 # Technologies & Design
