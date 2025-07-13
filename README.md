@@ -74,6 +74,7 @@ API_KEY_TINYURL=your-tinyurl-key
 
 # Build & Run
 ```
+make base #first time only to build the base image with all dependencies
 make
 make deploy
 ```
