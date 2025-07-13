@@ -58,9 +58,15 @@ TEST_F(TestBitly, SendASuccessful200PostRequestCacheMiss) {
     expected_response.body = R"({"link":"short.ly/abcd"})";;
 
     EXPECT_CALL(*redis, get(expected_url))
-        .WillOnce(::testing::Return(std::nullopt));
+        .WillOnce(::testing::Invoke([](std::string_view) -> async_task<std::optional<std::string>>{
+            co_return std::nullopt;
+        }));
+
     EXPECT_CALL(*redis, set(expected_url, "short.ly/abcd", ::testing::_))
-        .Times(1);
+        .WillOnce(::testing::Invoke([](std::string_view, std::string_view, int) -> async_task<void> {
+            co_return;
+        }));
+
     EXPECT_CALL(*http_client, post(::testing::Eq(expected_body), ::testing::_))
         .WillOnce(::testing::Invoke([expected_response](std::string_view, RequestInfo&) -> async_task<Response> {
             co_return expected_response;
@@ -84,8 +90,9 @@ TEST_F(TestBitly, SendASuccessful200PostRequestCacheHit) {
     std::string cached = "cached-value";
 
     EXPECT_CALL(*redis, get(url))
-        .WillOnce(::testing::Return(std::optional<std::string>(cached)));
-
+    .WillOnce(::testing::Invoke([cached](std::string_view) -> async_task<std::optional<std::string>>{
+        co_return cached;
+    }));
     EXPECT_CALL(*http_client, post(::testing::_, ::testing::_)).Times(0);
     EXPECT_CALL(*redis, set(::testing::_, ::testing::_, ::testing::_)).Times(0);
 

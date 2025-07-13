@@ -1,31 +1,49 @@
 #include "infra/cache/redis_client.h"
+#include <boost/redis.hpp>
+#include <boost/redis/src.hpp>
+#include <boost/asio.hpp>
 
-Cache::Redis::Redis(const std::string &host, int port)
-    : redis_client([&] {
-        sw::redis::ConnectionOptions opts;
-        opts.host = host;
-        opts.port = port;
-        sw::redis::ConnectionPoolOptions pool_opts;
-        return sw::redis::Redis(opts, pool_opts);
-    }())
-{}
+namespace asio = boost::asio;
+namespace redis = boost::redis;
 
-std::optional<std::string> Cache::Redis::get(std::string_view key) {
-    if (key.empty()) return std::nullopt;
-
-    sw::redis::StringView redis_key{ key.data(), key.size() };
-
-    auto result = redis_client.get(redis_key);
-    return result ? std::optional<std::string>(*result) : std::nullopt;
+Cache::Redis::Redis(asio::io_context &ioc, std::string host, std::string port)
+  : conn_(std::make_shared<redis::connection>(ioc.get_executor())) {
+    asio::co_spawn(ioc,
+        [conn = conn_,
+        host = std::move(host),
+        port = std::move(port)]() mutable -> asio::awaitable<void> {
+        redis::config cfg;
+        cfg.addr.host = std::move(host);
+        cfg.addr.port = std::move(port);
+        co_await conn->async_run(cfg,
+            redis::logger{redis::logger::level::err},
+            asio::use_awaitable);
+        },
+        asio::detached);
 }
 
-void Cache::Redis::set(std::string_view key, std::string_view value, int ttl) {
-    if (key.empty() || value.empty()) return;
+
+async_task<std::optional<std::string>> Cache::Redis::get(std::string_view key) {
+    if (key.empty()) co_return std::nullopt;
+
+    redis::request req;
+    req.push("GET", key);
+
+    redis::response<std::optional<std::string>> resp;
+
+    co_await conn_->async_exec(req, resp);
+
+    co_return std::move(*std::get<0>(resp));
+}
+
+async_task<void> Cache::Redis::set(std::string_view key, std::string_view value, int ttl) {
+    if (key.empty() || value.empty()) co_return;
 
     if (ttl <= 0) ttl = 3600;
 
-    sw::redis::StringView redis_key{ key.data(), key.size() };
-    sw::redis::StringView redis_val{ value.data(), value.size() };
+    redis::request req;
+    req.push("SET", key, value, "EX", std::to_string(ttl));
 
-    redis_client.set(redis_key, redis_val, ttl, sw::redis::UpdateType::ALWAYS);
+    redis::response<redis::ignore_t> resp;
+    co_await conn_->async_exec(req, resp);
 }

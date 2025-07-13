@@ -37,13 +37,14 @@ public:
 
 class StubRedis : public ICacheClient {
 public:
-  std::optional<std::string> get(std::string_view key) override {
+  async_task<std::optional<std::string>> get(std::string_view key) override {
     auto it = _store.find(std::string(key));
-    if (it == _store.end()) return std::nullopt;
-    return it->second;
+    if (it == _store.end()) co_return std::nullopt;
+    co_return it->second;
   }
-  void set(std::string_view key, std::string_view value, int) override {
+  async_task<void> set(std::string_view key, std::string_view value, int) override {
     _store[std::string(key)] = std::string(value);
+    co_return;
   }
 private:
   std::unordered_map<std::string, std::string> _store;

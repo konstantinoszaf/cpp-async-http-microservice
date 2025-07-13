@@ -44,6 +44,7 @@ foreach(test_src IN LISTS TEST_SOURCES)
       gmock_main
       infra
       Boost::json
+      Boost::system
   )
 
   gtest_discover_tests(${test_name})

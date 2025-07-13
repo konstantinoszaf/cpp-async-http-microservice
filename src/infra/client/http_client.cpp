@@ -49,7 +49,7 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
 
     beast::ssl_stream<beast::tcp_stream> stream(asio::make_strand(ex), ssl_ctx);
     stream.set_verify_mode(ssl::verify_peer);
-    stream.set_verify_callback(ssl::rfc2818_verification(config.host));
+    stream.set_verify_callback(asio::ssl::host_name_verification(config.host));
 
     if (!SSL_set_tlsext_host_name(stream.native_handle(), config.host.c_str())) {
         std::cout << "Got in, host is: " << config.host << '\n';

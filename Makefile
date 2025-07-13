@@ -43,6 +43,9 @@ test-run:
 image-%:
 	@$(MAKE) image SERVICES="$*"
 
+base:
+	docker build -f $(DOCKER_DIR)/dockerfile.deps -t $(PREFIX)-$(NAMESPACE)/urlshortener-deps:latest .
+
 image:
 	@echo "Starting to build services..."
 	@for service in $(SERVICES); do \
@@ -64,3 +67,6 @@ deploy:
 deploy-update:
 	microk8s kubectl delete namespace $(NAMESPACE)
 	@$(MAKE) deploy
+
+cleanup:
+	docker image prune -f

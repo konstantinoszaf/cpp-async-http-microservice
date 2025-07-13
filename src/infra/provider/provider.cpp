@@ -52,8 +52,11 @@ async_task<std::string> Provider::shorten(std::string_view url) {
         );
     }
 
-    auto cached = redis->get(url);
-    if (cached) co_return std::move(*cached);
+    auto cached = co_await redis->get(url);
+    if (cached) {
+        std::cout << "Got a cache hit!";
+        co_return std::move(*cached);
+    }
 
     auto body = create_request_body(url);
     auto response = co_await http_client->post(body, request_info);
@@ -66,7 +69,7 @@ async_task<std::string> Provider::shorten(std::string_view url) {
     }
 
     auto shortened_url = get_short_url(response.body);
-    redis->set(url, shortened_url);
+    co_await redis->set(url, shortened_url);
 
     co_return shortened_url;
 }

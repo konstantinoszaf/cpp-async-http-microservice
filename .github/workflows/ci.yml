@@ -19,32 +19,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential \
-            cmake \
-            git \
-            libssl-dev \
-            libboost-system-dev \
-            libboost-thread-dev \
-            libboost-date-time-dev \
-            libboost-chrono-dev \
-            libboost-atomic-dev \
-            libboost-json-dev
-
-      - name: Bootstrap vcpkg
+      - name: Clone vcpkg at Boost 1.88 baseline
         run: |
           git clone https://github.com/microsoft/vcpkg.git $HOME/vcpkg
-          $HOME/vcpkg/bootstrap-vcpkg.sh
+          cd $HOME/vcpkg
+          git checkout 48a0cef
+          ./bootstrap-vcpkg.sh
 
-      - name: Install vcpkg ports
+      - name: Install Boost 1.88 + gtest
         run: |
           $HOME/vcpkg/vcpkg install \
-            hiredis \
-            redis-plus-plus \
-            gtest
+            boost-system:x64-linux \
+            boost-thread:x64-linux \
+            boost-json:x64-linux \
+            boost-beast:x64-linux \
+            boost-redis:x64-linux \
+            boost-asio[ssl]:x64-linux \
+            gtest:x64-linux \
+            --clean-after-build
 
       - name: Build unit & integration tests
         run: make test
