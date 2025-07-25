@@ -19,9 +19,22 @@ using tcp = asio::ip::tcp;
 
 HttpClient::HttpClient(boost::asio::io_context& io_ctx_,
                         boost::asio::ssl::context& ssl_ctx_,
-                        std::shared_ptr<IDnsCache> dns_cache_)
-: io_ctx{io_ctx_}, ssl_ctx{ssl_ctx_}, dns_cache{dns_cache_} {
+                        std::unique_ptr<IDnsCache> dns_cache_,
+                        std::unique_ptr<IDnsResolver> resolver_)
+: io_ctx{io_ctx_}, ssl_ctx{ssl_ctx_}, dns_cache{std::move(dns_cache_)}, dns_resolver{std::move(resolver_)} {
     ssl_ctx.set_default_verify_paths();
+}
+
+async_task<Endpoints> HttpClient::lookup_or_resolve(std::string_view host, std::string_view port) {
+    auto eps = dns_cache->find_entry(host, port); 
+    if (!eps.empty()) co_return eps;
+
+    eps = co_await dns_resolver->resolve(host, port);
+    if (!eps.empty()) {
+        dns_cache->update_or_add_entry(host, port, eps);
+    }
+
+    co_return eps;
 }
 
 async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& config) {
@@ -29,7 +42,7 @@ async_task<Response> HttpClient::post(std::string_view payload, RequestInfo& con
 
     boost::system::error_code ec;
 
-    auto results = co_await dns_cache->resolve(config.host, config.port);
+    auto results = co_await lookup_or_resolve(config.host, config.port);
     if (results.empty()) {
         co_return bad_response("DNS resolve failed", HTTP::code::ServiceUnavailable);
     }

@@ -65,8 +65,8 @@ add_library(infra STATIC
     src/infra/provider/tinyurl.cpp
     src/infra/client/http_client.cpp
     src/infra/factory/provider_factory.cpp
-    src/infra/network/dns_cache.cpp
     src/infra/network/dns_resolver.cpp
+    src/infra/cache/dns_cache.cpp
     src/infra/cache/redis_client.cpp
 )
 target_link_libraries(infra

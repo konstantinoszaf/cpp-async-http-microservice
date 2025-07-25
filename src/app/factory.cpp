@@ -9,8 +9,8 @@
 #include "infra/environment/env_reader.h"
 #include "infra/client/http_client.h"
 #include "infra/factory/provider_factory.h"
-#include "infra/network/dns_cache.h"
 #include "infra/network/dns_resolver.h"
+#include "infra/cache/dns_cache.h"
 #include "infra/cache/redis_client.h"
 
 Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_client} {
@@ -33,9 +33,9 @@ Factory::Factory() : io_ctx_{}, ssl_ctx_{boost::asio::ssl::context::tlsv13_clien
     parser = std::make_shared<JsonParser>(validator);
 
     // 3) create http client
-    auto resolver = std::make_shared<DnsResolver>();
-    auto lru_cache = std::make_shared<DnsLRUCache>(resolver, 30, std::chrono::seconds(600));
-    http_client = std::make_shared<HttpClient>(io_ctx_, ssl_ctx_, lru_cache);
+    auto dns_resolver = std::make_unique<DnsResolver>();
+    auto dns_cache = std::make_unique<DnsCache>();
+    http_client = std::make_shared<HttpClient>(io_ctx_, ssl_ctx_, std::move(dns_cache), std::move(dns_resolver));
 
     // 4) create environment reader
     env_reader = std::make_shared<EnvReader>();

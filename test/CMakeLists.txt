@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(URLShortenerTests)
 
+add_compile_options(-fsanitize=undefined)
+add_link_options(-fsanitize=undefined)
+
 find_package(Boost 1.83 REQUIRED
   COMPONENTS
     system
