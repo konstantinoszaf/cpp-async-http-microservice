@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core/domain/types.h"
-#include "core/ports/task.h"
 #include <string_view>
 #include <vector>
 
@@ -11,8 +10,6 @@ class IDnsCache {
 public:
     virtual ~IDnsCache() = default;
 
-    /// Resolve host:port → a list of Endpoint.  Empty on error.
-    virtual async_task<Endpoints>
-    resolve(std::string_view host,
-            std::string_view port) = 0;
+    virtual Endpoints find_entry(std::string_view domain, std::string_view port) = 0;
+    virtual void update_or_add_entry(std::string_view domain, std::string_view port, Endpoints& endpoints) = 0;
 };
