@@ -1,6 +1,6 @@
 # URLShortener
 A fully asynchronous server and TLS-enabled client microservice in C++.
-Service utilizes an in-memory LRU cache for DNS lookups and uses Redis to cache URL mappings.
+Service utilizes an in-memory cache for DNS lookups and uses Redis to cache URL mappings.
 
 The input is a json payload containing:
 
